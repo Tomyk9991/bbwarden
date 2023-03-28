@@ -9,12 +9,17 @@ export default {
             latestSavedObject: {
                 userName: '',
                 encrypted_password: ''
-            }
+            },
+            modalOpen: false
         }
     },
     props: {
         currentEntry: {
             type: Object,
+            required: true
+        },
+        onDeleted: {
+            type: Function,
             required: true
         },
         sessionId: {
@@ -43,6 +48,21 @@ export default {
                     break;
             }
         },
+        openModal() {
+            this.modalOpen = true;
+        },
+        closeModal() {
+            this.modalOpen = false;
+        },
+        async deleteEntry() {
+            await invoke('remove_entry', {
+                id: this.currentEntry.id,
+                sessionId: this.sessionId,
+            });
+            
+            this.closeModal();
+            this.onDeleted();
+        },
         async outOfFocus() {
             this.currentEntry.readOnlyUserName = true;
             this.currentEntry.readOnlyPassword = true;
@@ -57,7 +77,7 @@ export default {
             this.latestSavedObject.userName = this.currentEntry.user_name;
             this.latestSavedObject.encrypted_password = this.currentEntry.encrypted_password;
             
-            let result = await invoke("edit_entry", {
+            await invoke("edit_entry", {
                 id: this.currentEntry.id,
                 sessionId: this.sessionId,
                 userName: this.currentEntry.user_name,
@@ -91,8 +111,29 @@ export default {
         </div>
     </div>
 
-    <div class="position-absolute bottom-0 mb-5">
-        <button class="btn btn-danger ms-2" style="width: 100px"><i class="bi-trash"/></button>
+    <div v-if="currentEntry !== undefined" class="position-absolute bottom-0 mb-5">
+        <button @click="openModal" class="btn btn-danger ms-2" style="width: 100px"><i class="bi-trash"/></button>
+    </div>
+
+<!--    Modal-->
+    <div class="modal" :class="modalOpen ? 'active' : ''" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Eintrag löschen</h5>
+                    <button @click="closeModal" type="button" class="btn close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Sind Sie sicher, dass Sie den Eintrag löschen wollen?</p>
+                </div>
+                <div class="modal-footer">
+                    <button @click="deleteEntry" type="button" class="btn btn-danger">Eintrag löschen</button>
+                    <button @click="closeModal" type="button" class="btn btn-secondary">Schließen</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 

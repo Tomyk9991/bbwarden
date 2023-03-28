@@ -3,7 +3,7 @@
 use tauri::WindowEvent;
 use crate::account::AccountError;
 use crate::commands::application::application_close;
-use crate::commands::database::{fetch_passwords, unlock, logout, edit_entry};
+use crate::commands::database::{fetch_passwords, unlock, logout, edit_entry, remove_entry, create_entry};
 use crate::states::LoggedInState;
 
 
@@ -20,7 +20,7 @@ mod utils;
 fn main() -> Result<(), BackendError> {
     tauri::Builder::default()
         .manage(LoggedInState::default())
-        .invoke_handler(tauri::generate_handler![unlock, logout, fetch_passwords, edit_entry])
+        .invoke_handler(tauri::generate_handler![unlock, logout, fetch_passwords, edit_entry, remove_entry, create_entry])
         .on_window_event(|event| match event.event() {
             WindowEvent::Destroyed {..} => { application_close(); return; },
             WindowEvent::CloseRequested { .. } => { application_close(); return; }

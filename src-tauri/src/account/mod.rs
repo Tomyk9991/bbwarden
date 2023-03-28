@@ -109,8 +109,6 @@ impl Account {
                 let file = File::open(entry.path())?;
                 let reader = BufReader::new(file);
                 let obj: Account = serde_json::de::from_reader(reader)?;
-
-                println!("{:?}", obj);
                 
                 if func(&obj) {
                     accounts.push(obj);
